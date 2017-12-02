@@ -1,32 +1,35 @@
 language: rust
-sudo: false
+sudo: required
 
 matrix:
   include:
-    - rust: 1.21.0
+    # - rust: 1.21.0
     - rust: stable
-    - os: osx
-      before_install:
-        - export OPENSSL_INCLUDE_DIR=`brew --prefix openssl`/include
-        - export OPENSSL_LIB_DIR=`brew --prefix openssl`/lib
-    - rust: beta
-    - rust: nightly
-
-    - rust: nightly
-      before_script:
-        - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
-      script:
-        - cargo doc --no-deps
-        - cargo doc --no-deps --manifest-path libssh2-sys/Cargo.toml
-      after_success:
-        - travis-cargo --only nightly doc-upload
+    # - os: osx
+    #   before_install:
+    #     - export OPENSSL_INCLUDE_DIR=`brew --prefix openssl`/include
+    #     - export OPENSSL_LIB_DIR=`brew --prefix openssl`/lib
+    # - rust: beta
+    # - rust: nightly
+    #
+    # - rust: nightly
+    #   before_script:
+    #     - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
+    #   script:
+    #     - cargo doc --no-deps
+    #     - cargo doc --no-deps --manifest-path libssh2-sys/Cargo.toml
+    #   after_success:
+    #     - travis-cargo --only nightly doc-upload
 
 before_script:
   - ssh-keygen -t rsa -f ~/.ssh/id_rsa -N "" -q
   - eval `ssh-agent -s`
   - ssh-add ~/.ssh/id_rsa
   - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-  - telnet localhost 22 &
+  - echo "Host localhost" >> ~/.ssh/config
+  - echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+  - chmod 600 ~/.ssh/authorized_keys
+  - ssh -vvv localhost echo hello
 
 script:
   - cargo build
